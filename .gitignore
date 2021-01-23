@@ -1,0 +1,5 @@
+.vscode/
+.ipynb_checkpoints/
+Face-Mask-Detection/.ipynb_checkpoints/
+Face-Mask-Detection/dataset/
+data/faces/aakarsh-verma.jpg
