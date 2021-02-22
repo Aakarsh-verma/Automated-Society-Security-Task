@@ -5,8 +5,10 @@ plot.png
 dataset/with_mask/
 dataset/without_mask/
 dataset/faces/aakarsh-verma.jpg
+dataset/faces/aakarsh.jpg
 dataset/faces/.ipynb_checkpoints/
 try.ipynb
 try - Copy.ipynb
 .vs/
 asstqr.ipynb
+temp.py

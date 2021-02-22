@@ -1,4 +1,6 @@
 Name,EntryDate,EntryTime,EntryTemp,ExitTime,ExitTemp
-aakarsh-verma,15/02/2021,16:14:47,35,20:10:03,35
-sr-k,16/02/2021,11:22:34,35,inside,none
-aakarsh-verma,17/02/2021,20:10:09,35,inside,none
+aakarsh-verma,15/02/2021,16:14:47,35.0,20:10:03,35
+sr-k,16/02/2021,11:22:34,35.0,inside,none
+aakarsh,22/02/2021,21:35:24,32.99,inside,none
+/home/pi/Automated-Society-Security-Task/dataset/faces/aakarsh,22/02/2021,21:40:01,29.63000000000005,21:42:07,33.170000000000016
+/home/pi/Automated-Society-Security-Task/dataset/faces/aakarsh,22/02/2021,21:42:19,33.03000000000003,inside,none
