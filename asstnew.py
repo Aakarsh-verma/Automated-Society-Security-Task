@@ -8,14 +8,14 @@
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
-from imutils.video import VideoStream
 from datetime import datetime, date, timedelta
-from smbus2 import SMBus
+from imutils.video import VideoStream
 from mlx90614 import MLX90614
-import face_recognition
 from pyzbar import pyzbar
-import numpy as np
+from smbus2 import SMBus
+import face_recognition
 import pandas as pd
+import numpy as np
 import schedule
 import imutils
 import time
@@ -185,6 +185,7 @@ def markvisitor(name):
     temp= sensor.get_object_1()
     bus.close()
     
+    temp = "{.2f}%".format(temp)
     vname=name
     df = pd.read_csv('Attendance.csv')
     now = datetime.now()
@@ -234,7 +235,7 @@ def asst():
     path = os.path.join(cur_direc, 'dataset/faces/')
     list_of_files = [f for f in glob.glob(path+'*.jpg')]
     number_files = len(list_of_files)
- 
+
     names = []
     newnames = []
     images = []
@@ -246,24 +247,24 @@ def asst():
                 name = name.replace('.jpg', '')
                 newnames.append(name)
     names = newnames
- 
+
     for i in range(number_files):
         globals()['image_{}'.format(i)] = face_recognition.load_image_file(list_of_files[i])
         globals()['image_encoding_{}'.format(i)] = face_recognition.face_encodings(globals()['image_{}'.format(i)])[0]
         faces_encodings.append(globals()['image_encoding_{}'.format(i)])
- 
+
         # Create array of known names
         names[i] = names[i].replace(cur_direc,'')  
         faces_names.append(names[i])
- 
- 
+
+
     face_locations = []
     face_encodings = []
     face_names = []
     process_this_frame = True
     
-    prototxtPath = r"face_detector/deploy.prototxt"
-    weightsPath = r"face_detector/res10_300x300_ssd_iter_140000.caffemodel"
+    prototxtPath = r"face_detector\deploy.prototxt"
+    weightsPath = r"face_detector\res10_300x300_ssd_iter_140000.caffemodel"
     faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
     # load the face mask detector model from disk
     maskNet = load_model("mask_detector.model")
@@ -276,20 +277,20 @@ def asst():
         schedule.run_pending()
         
         ret, frame = video_capture.read()
- 
+
         small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
- 
+
         rgb_small_frame = small_frame[:, :, ::-1]
- 
+
         if process_this_frame:
             face_locations = face_recognition.face_locations( rgb_small_frame)
             face_encodings = face_recognition.face_encodings( rgb_small_frame, face_locations)
- 
+
             face_names = []
             for face_encoding in face_encodings:
                 matches = face_recognition.compare_faces (faces_encodings, face_encoding)
                 name = "Unknown"
- 
+
                 face_distances = face_recognition.face_distance( faces_encodings, face_encoding)
                 best_match_index = np.argmin(face_distances)
                 if matches[best_match_index]:
@@ -300,7 +301,7 @@ def asst():
         # detect faces in the frame and determine if they are wearing a
         # face mask or not
         (locs, preds) = detect_and_predict_mask(frame, faceNet, maskNet)
- 
+
         # loop over the detected face locations and their corresponding
         # locations
         for (box, pred) in zip(locs, preds):
@@ -319,17 +320,17 @@ def asst():
             
             
             elif label != 'Mask' and name != 'Unknown':
-                label = 'No Mask Detectected, Entry Denied.'
-                print('Please put on a mask')
+                label = 'Mask not worn, Entry Denied Till mask is worn.'
             
             
             elif name == "Unknown":
+                label = 'Show full face for Registration'
                 print('Show full face for Registration')
                 idscanner(frame)
-                asst()
+
             # include the probability in the label
-            label = "{}, {}: {:.2f}%".format(name, label, max(mask, withoutMask) * 100)
- 
+            label = "{}, {}".format(name, label)
+
             # display the label and bounding box rectangle on the output
             # frame
             cv2.putText(frame, label, (startX, startY - 10),
@@ -340,7 +341,7 @@ def asst():
         # Hit 'q' on the keyboard to quit!
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
- 
+
     video_capture.release() 
     cv2.destroyAllWindows()
     
