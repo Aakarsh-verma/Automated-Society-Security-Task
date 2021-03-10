@@ -23,7 +23,7 @@ This problem has the following dimension
 2. Python in jupyter notebook
 3. Method: Convolutional Neural Networks
 4. Packages for Face and Mask Recogniton : Opencv, Tensorflow, Keras, pyzbar, face_recognition
-5. Tkinter gor local GUI, PHP for webapp
+5. Tkinter for local GUI, PHP for webapp.
 6. MySQL for database
 
 ## Credits
