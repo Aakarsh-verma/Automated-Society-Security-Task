@@ -4,7 +4,6 @@
 * Automation of Society Security Tasks – Visitors in a housing society fall in the category of regular visitors lik edrivers, maids, milkman, sweeper, car cleaners, etc who visit on a daily basis and the other category is of infrequent known or unknown visitors ( like guests, delivery boys).
 * Record with timestamp registered regular visitors and their temperature check.
 
-
 ## Problem Dimensions:
 This problem has the following dimension
 * First time registration of Regular visitors as described above.
@@ -25,6 +24,15 @@ This problem has the following dimension
 4. Packages for Face and Mask Recogniton : Opencv, Tensorflow, Keras, pyzbar, face_recognition
 5. Tkinter for local GUI, PHP for webapp.
 6. MySQL for database
+
+## Key Features
+1. Completely Contactless System. 
+2. Facial Identification both while wearing and not wearing a mask meaning a person does'nt need to remove his/her mask to get identified.
+3. Temperature Checking.
+4. Live website to monitor and display real time information about visitors.
+5. Standalone system and along with local cache.
+6. Data of both valid and invalid visits stored.
+7. Regular cleaning of both cache data and visitor photos for storage management.
 
 ## Credits
 * Face Recognition by [Behic Guven](https://towardsdatascience.com/building-a-face-recognizer-in-python-7fd6630c6340)
