@@ -3,9 +3,9 @@ from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
 from datetime import datetime, date, timedelta
 from imutils.video import VideoStream
-from mlx90614 import MLX90614
+# from mlx90614 import MLX90614
 from pyzbar import pyzbar
-from smbus2 import SMBus
+# from smbus2 import SMBus
 import face_recognition
 import pandas as pd
 import numpy as np
@@ -133,7 +133,7 @@ def detect_and_predict_mask(frame, faceNet, maskNet):
     # locations
     return (locs, preds)
 
-def idscanner(frame):
+def idscanner(frame, added):
 
     qrname = ""
     cur_direc = os.getcwd()
@@ -164,10 +164,12 @@ def idscanner(frame):
             now = datetime.now()
             curdate= now.strftime("%d/%m/%Y")
             timenow = now.strftime('%H:%M:%S')
-            payload = {'a1':str(name), 'a2':str(curdate), 'a3':str(timenow), 'a4':'NewVisitor'}
-            r = requests.get("http://www.securitynet.ml/nvisitor.php", params=payload)
-            cv2.waitKey(5)
-            return
+            added = 'yes'
+            return added
+#             payload = {'a1':str(name), 'a2':str(curdate), 'a3':str(timenow), 'a4':'NewVisitor'}
+#             r = requests.get("http://www.securitynet.ml/nvisitor.php", params=payload)
+#             cv2.waitKey(5)
+            
         else:
             return
 
@@ -182,55 +184,64 @@ def markvisitor(entry, name):
     now = datetime.now()
     curdate= now.strftime("%d/%m/%Y")
     timenow = now.strftime('%H:%M:%S')
-    bus = SMBus(1)
-    sensor = MLX90614(bus, address=0x5A)
-    temp= sensor.get_object_1()
-    bus.close()
-    temp = "{.2f}%".format(temp)
-    
+#     bus = SMBus(1)
+#     sensor = MLX90614(bus, address=0x5A)
+#     temp= sensor.get_object_1()
+#     bus.close()
+#     temp = "{.2f}%".format(temp)
+    temp=32
     if float(temp) > 38.30:
         entry = "Denied"
-        payload = {'a1':str(vname), 'a2':str(curdate), 'a3':str(timenow), 'a4':str(temp), 'a5':'High Temperature'}
-        r = requests.get("http://www.securitynet.ml/dvisitor.php", params=payload, timeout=5)
-        r.close()
+#         payload = {'a1':str(vname), 'a2':str(curdate), 'a3':str(timenow), 'a4':str(temp), 'a5':'High Temperature'}
+#         r = requests.get("http://www.securitynet.ml/dvisitor.php", params=payload, timeout=5)
+#         r.close()
         return entry
     
     df = pd.read_csv('Attendance.csv')
-    visitor = df.query('Name == @vname and ExitTime=="inside"')
-    entrytime= visitor['EntryTime']
-    visitor = visitor.tail(1)
-    if visitor.empty:
-        
+    visitor = df.query('Name == @vname')
+    
+    mdate = datetime.strptime(curdate, '%d/%m/%Y')
+    mtime = datetime.strptime(timenow, '%H:%M:%S')
+    
+    
+    if visitor.empty: 
         names_list = list(df['Name'])
         df.loc[len(df)] = [vname, curdate, timenow, temp, 'inside', 'none']
         print('Welcome')
  
-        payload = {'a1':str(vname), 'a2':str(curdate), 'a3':str(timenow), 'a4':str(temp)}
-        r = requests.get("http://www.securitynet.ml/alvisitor.php", params=payload, timeout=5)
-        print(r.url)
-        r.close()
-        
-        if name in names_list:
-            visitor = df.query('Name ==@name')
-            exittime=visitor['ExitTime']        
+        #payload = {'a1':str(vname), 'a2':str(curdate), 'a3':str(timenow), 'a4':str(temp)}
+#         r = requests.get("http://www.securitynet.ml/alvisitor.php", params=payload, timeout=5)
+#         print(r.url)
+#         r.close()
     else:
-        entrytime = pd.to_datetime(entrytime, format='%H:%M:%S')
-        diff = str(datetime.strptime(timenow, '%H:%M:%S') - entrytime)
-        dts = str(diff)
-        match2 = re.findall(r":(.*):",dts)     
-        try:
-            if int(match2[0]) >= 2:
-                vname1=str(name)
-                #print(vname1)
-                df.loc[df['Name'].str.contains(vname1), 'ExitTime'] = timenow                
-                df.loc[df['Name'].str.contains(vname1), 'ExitTemp'] = temp
-                print('Nice having you.')
-                time.sleep(5)
-        except:
-            print("catch")
-            pass    
+        visitor = visitor.tail(1)
+        vdate = visitor['EntryDate'].tolist()
+        vtime = visitor['EntryTime'].tolist()
+        vdate = vdate[-1]
+        vtime = vtime[-1]
+        vdate = datetime.strptime(vdate, '%d/%m/%Y')
+        vtime = datetime.strptime(vtime, '%H:%M:%S')
+        
+        if mdate == vdate:
+            if mtime >= vtime + timedelta(minutes=30):
+                df.loc[len(df)] = [vname, curdate, timenow, temp, 'inside', 'none']
+#                 payload = {'a1':str(vname), 'a2':str(curdate), 'a3':str(timenow), 'a4':str(temp)}
+#                 r = requests.get("http://www.securitynet.ml/alvisitor.php", params=payload, timeout=5)
+#                 print(r.url)
+#                 r.close()
+        elif mdate != vdate:
+            df.loc[len(df)] = [vname, curdate, timenow, temp, 'inside', 'none']
+#                 payload = {'a1':str(vname), 'a2':str(curdate), 'a3':str(timenow), 'a4':str(temp)}
+#                 r = requests.get("http://www.securitynet.ml/alvisitor.php", params=payload, timeout=5)
+#                 print(r.url)
+#                 r.close()
+        else:
+            print('idk')
+            pass
 
     df.to_csv('Attendance.csv',index=False)
+    
+    
 def marknomask(name):
     vname=name
     visitor = []
@@ -245,10 +256,10 @@ def marknomask(name):
     
     if visitor.empty:
         df.loc[len(df)] = [vname, curdate, timenow,'No-Mask']
-        payload = {'a1':str(vname), 'a2':str(curdate), 'a3':str(timenow), 'a4':'', 'a5':'No Mask'}
-        r = requests.get("http://www.securitynet.ml/dvisitor.php", params=payload, timeout=5)
-        print(r.url)
-        r.close()
+#         payload = {'a1':str(vname), 'a2':str(curdate), 'a3':str(timenow), 'a4':'', 'a5':'No Mask'}
+#         r = requests.get("http://www.securitynet.ml/dvisitor.php", params=payload, timeout=5)
+#         print(r.url)
+#         r.close()
     else:
         visitor = visitor.tail(1)
         vdate = visitor['EntryDate'].tolist()
@@ -261,16 +272,16 @@ def marknomask(name):
         if mdate == vdate:
             if mtime >= vtime + timedelta(minutes=30):
                 df.loc[len(df)] = [vname, curdate, timenow,'No Mask']
-                payload = {'a1':str(vname), 'a2':str(curdate), 'a3':str(timenow), 'a4':'', 'a5':'No Mask'}
-                r = requests.get("http://www.securitynet.ml/dvisitor.php", params=payload, timeout=5)
-                print(r.url)
-                r.close()
+#                 payload = {'a1':str(vname), 'a2':str(curdate), 'a3':str(timenow), 'a4':'', 'a5':'No Mask'}
+#                 r = requests.get("http://www.securitynet.ml/dvisitor.php", params=payload, timeout=5)
+#                 print(r.url)
+#                 r.close()
         elif mdate != vdate:
             df.loc[len(df)] = [vname, curdate, timenow,'No Mask']
-            payload = {'a1':str(vname), 'a2':str(curdate), 'a3':str(timenow), 'a4':'', 'a5':'No Mask'}
-            r = requests.get("http://www.securitynet.ml/dvisitor.php", params=payload, timeout=5)
-            print(r.url)
-            r.close()
+#             payload = {'a1':str(vname), 'a2':str(curdate), 'a3':str(timenow), 'a4':'', 'a5':'No Mask'}
+#             r = requests.get("http://www.securitynet.ml/dvisitor.php", params=payload, timeout=5)
+#             print(r.url)
+#             r.close()
         else:
             pass
     
@@ -367,37 +378,48 @@ def asst():
             
             if label == 'Mask' and name != 'Unknown':
                 entry = ''
-                markvisitor(entry, name)
-                if entry == 'Denied':
+                if markvisitor(entry, name) == 'Denied':
                     label = 'Your Temperature is too high, Entry is Denied'                    
                 else:
                     label = 'Welcome to the society'
             
             elif label != 'Mask' and name != 'Unknown':
-                label = 'Mask not worn, Entry Denied Till mask is worn.'
+                label = 'Mask not worn, Please wear a mask!'
                 marknomask(name)
             
             elif name == "Unknown":
                 label = 'Show full face for Registration'
                 print('Show full face for Registration')
-                idscanner(frame)
-
+                added = ''
+                if idscanner(frame, added) == 'yes':
+                    print('done')
+                    video_capture.release() 
+                    cv2.destroyAllWindows()
+                    asst()
+                else:
+                    pass
             # include the probability in the label
-            label = "{}, {}".format(name, label)
+#             label = "{}, {}".format(name, label)
 
             # display the label and bounding box rectangle on the output
             # frame
-            cv2.putText(frame, label, (startX, startY - 10),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
+            cv2.putText(frame, label, (0,50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, color, 2)
             cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
+#             cv2.rectangle(frame, (startX, startY - 35), (endX, endY), (0, 0, 255), cv2.FILLED)
+            font = cv2.FONT_HERSHEY_DUPLEX
+            cv2.putText(frame, name, (startX, startY - 10), font, 1.0, (255, 255, 255), 1)
+            
+    
+    
         # Display the resulting image
-        cv2.imshow('Video', frame)
+        cv2.imshow('ASST', frame)
         # Hit 'q' on the keyboard to quit!
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     video_capture.release() 
     cv2.destroyAllWindows()
+    
     
 class Login:
 
@@ -428,9 +450,11 @@ class Login:
         us = self.txt_user.get()
         pas = self.txt_pass.get()
         payload = {'a1':str(us), 'a2':str(pas)}
-        r = requests.post("http://www.securitynet.ml/verif.php", params=payload, timeout=5)
-        if r.status_code == 200:
+#         r = requests.post("http://www.securitynet.ml/verif.php", params=payload, timeout=5)
+        if self.txt_pass.get()=="1" and self.txt_user.get()=="1":#r.status_code == 200:
+            root.destroy()
             asst()
+           
         elif self.txt_pass.get()=="" or self.txt_user.get()=="":
             messagebox.showerror("Eroor","All fields are required",parent=self.root)            
         else:

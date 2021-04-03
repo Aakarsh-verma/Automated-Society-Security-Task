@@ -4,6 +4,7 @@ env/
 plot.png
 dataset/with_mask/
 dataset/without_mask/
+dataset/helmet
 dataset/faces/aakarsh-verma.jpg
 dataset/faces/aakarsh.jpg
 dataset/faces/.ipynb_checkpoints/
@@ -12,3 +13,5 @@ try - Copy.ipynb
 .vs/
 asstqr.ipynb
 temp.py
+detect_mask_video.py
+train_mask_detector.py
