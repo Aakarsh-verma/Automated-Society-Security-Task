@@ -4,8 +4,10 @@ env/
 plot.png
 dataset/with_mask/
 dataset/without_mask/
-dataset/helmet
-dataset/faces/aakarsh-verma.jpg
+dataset/helmet/
+dataset/without_helmet/
+dataset/sunglasses
+dataset/faces/
 dataset/faces/aakarsh.jpg
 dataset/faces/.ipynb_checkpoints/
 try.ipynb
@@ -15,3 +17,6 @@ asstqr.ipynb
 temp.py
 detect_mask_video.py
 train_mask_detector.py
+helmet_model.model
+sunglasses_detector.model
+multi_model.model
